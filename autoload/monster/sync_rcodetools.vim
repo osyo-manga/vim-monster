@@ -21,7 +21,7 @@ endfunction
 function! monster#sync_rcodetools#complete(context)
 	if !executable("rct-complete")
 		call monster#errmsg("No executable 'rct-complete' command.")
-		call monster#errmsg("Please install 'gem install rct-complete'.")
+		call monster#errmsg("Please install 'gem install rcodetools'.")
 		return
 	endif
 	let command = printf("rct-complete --completion-class-info --dev --fork --line=%d --column=%d %s", a:context.line, a:context.col, a:context.file)
