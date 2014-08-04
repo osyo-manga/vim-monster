@@ -8,10 +8,13 @@ function! monster#errmsg(errors)
 		return monster#errmsg(split("monster.vim : " . a:errors, '[\n\r]'))
 	endif
 	echohl ErrorMsg
-	for text in a:errors
-		echom substitute(text, "\t", "        ", "g")
-	endfor
-	echohl NONE
+	try
+		for text in a:errors
+			echom substitute(text, "\t", "        ", "g")
+		endfor
+	finally
+		echohl NONE
+	endtry
 endfunction
 
 
