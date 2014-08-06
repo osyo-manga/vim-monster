@@ -3,6 +3,9 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 
+let g:monster#debug = get(g:, "monster#debug", 0)
+
+
 function! monster#errmsg(errors)
 	if type(a:errors) != type([])
 		return monster#errmsg(split("monster.vim : " . a:errors, '[\n\r]'))
@@ -15,6 +18,13 @@ function! monster#errmsg(errors)
 	finally
 		echohl NONE
 	endtry
+endfunction
+
+
+function! monster#debug_log(text)
+	if g:monster#debug
+		echo a:text
+	endif
 endfunction
 
 
@@ -38,23 +48,27 @@ endfunction
 function! s:current_context(...)
 	let base = get(a:, 1, {})
 	return extend({
-\		"file" : s:make_tempfile(bufnr("%")),
+\		"file" : s:make_tempfile(bufnr("%"), "rb"),
 \		"col"  : col("."),
+\		"complete_pos" : strwidth(matchstr(getline("."), '\zs.\{-}\ze\w*$')),
 \		"line" : line("."),
 \		"keyword" : printf("%d-%d-%d", bufnr("%"), col("."), line(".")),
+\		"cache_keyword" : printf("%d-%d-%d", bufnr("%"), col("."), line(".")),
 \	}, base)
 endfunction
 
 
 function! monster#complete(findstart, base)
 	if a:findstart
-		return col(".") - 1
+		let s:context = s:current_context({ "col" : col(".") - 1 })
+		return s:context.complete_pos
 	endif
-	let context = s:current_context({ "col" : col(".") - 1 })
 	try
-		return monster#sync_rcodetools#complete(context)
+		return monster#rcodetools#complete(s:context)
+" 		return filter(monster#rcodetools#complete(context), 'v:val.word =~ "^".a:base')
 	finally
-		call delete(context.file)
+		call delete(s:context.file)
+		unlet s:context
 	endtry
 endfunction
 
@@ -67,7 +81,7 @@ function! monster#test()
 	let start_time = reltime()
 	let context = s:current_context()
 	try
-		let result = monster#sync_rcodetools#complete(context)
+		let result = monster#rcodetools#complete(context)
 		return result
 	finally
 		call delete(context.file)
