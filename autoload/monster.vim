@@ -52,21 +52,28 @@ endfunction
 
 function! s:current_context(...)
 	let base = get(a:, 1, {})
+	let complete_pos = strwidth(matchstr(getline("."), '\zs.\{-}\ze\w*$'))
 	return extend({
 \		"bufnr" : bufnr("%"),
 \		"col"  : col("."),
-\		"complete_pos" : strwidth(matchstr(getline("."), '\zs.\{-}\ze\w*$')),
+\		"complete_pos" : complete_pos,
 \		"line" : line("."),
-\		"cache_keyword" : printf("%d-%d-%d", bufnr("%"), col("."), line(".")),
+\		"cache_keyword" : printf("%d-%d-%d", bufnr("%"), complete_pos, line(".")),
 \	}, base)
 " \		"cache_keyword" : printf("%d-%d-%d", bufnr("%"), col("."), line(".")),
 endfunction
 
 
+let s:cache = {}
 function! monster#complete(findstart, base)
 	if a:findstart
 		let context = s:current_context({ "col" : col(".") - 1 })
-		let s:result = monster#rcodetools#complete(context)
+		if has_key(s:cache, context.cache_keyword)
+			let s:result = s:cache[context.cache_keyword]
+		else
+			let s:result = monster#rcodetools#complete(context)
+			let s:cache[context.cache_keyword] = s:result
+		endif
 		return context.complete_pos
 	endif
 	try
@@ -75,6 +82,12 @@ function! monster#complete(findstart, base)
 		unlet s:result
 	endtry
 endfunction
+
+
+augroup monster
+	autocmd!
+	autocmd InsertEnter * let s:cache = {}
+augroup END
 
 
 function! monster#test()
