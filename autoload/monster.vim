@@ -45,30 +45,34 @@ function! s:make_tempfile(bufnr, ...)
 endfunction
 
 
+function! monster#make_tempfile(...)
+	return call("s:make_tempfile", a:000)
+endfunction
+
+
 function! s:current_context(...)
 	let base = get(a:, 1, {})
 	return extend({
-\		"file" : s:make_tempfile(bufnr("%"), "rb"),
+\		"bufnr" : bufnr("%"),
 \		"col"  : col("."),
 \		"complete_pos" : strwidth(matchstr(getline("."), '\zs.\{-}\ze\w*$')),
 \		"line" : line("."),
-\		"keyword" : printf("%d-%d-%d", bufnr("%"), col("."), line(".")),
 \		"cache_keyword" : printf("%d-%d-%d", bufnr("%"), col("."), line(".")),
 \	}, base)
+" \		"cache_keyword" : printf("%d-%d-%d", bufnr("%"), col("."), line(".")),
 endfunction
 
 
 function! monster#complete(findstart, base)
 	if a:findstart
-		let s:context = s:current_context({ "col" : col(".") - 1 })
-		return s:context.complete_pos
+		let context = s:current_context({ "col" : col(".") - 1 })
+		let s:result = monster#rcodetools#complete(context)
+		return context.complete_pos
 	endif
 	try
-		return monster#rcodetools#complete(s:context)
-" 		return filter(monster#rcodetools#complete(context), 'v:val.word =~ "^".a:base')
+		return s:result
 	finally
-		call delete(s:context.file)
-		unlet s:context
+		unlet s:result
 	endtry
 endfunction
 
@@ -84,7 +88,6 @@ function! monster#test()
 		let result = monster#rcodetools#complete(context)
 		return result
 	finally
-		call delete(context.file)
 		echom "Complete : " . reltimestr(reltime(start_time))
 	endtry
 endfunction
