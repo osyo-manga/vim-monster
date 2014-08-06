@@ -2,6 +2,8 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+let g:monster#rcodetools#backend = get(g:, "monster#rcodetools#backend", "rct_complete")
+
 
 function! s:parse(text)
 	let parsed = split(a:text, '\t')
@@ -19,7 +21,9 @@ endfunction
 
 
 function! monster#rcodetools#complete(context)
-	return monster#rcodetools#rct_complete#complete(a:context)
+" 	return monster#rcodetools#async_rct_complete#complete(a:context)
+" 	return monster#rcodetools#rct_complete#complete(a:context)
+	return monster#rcodetools#{g:monster#rcodetools#backend}#complete(a:context)
 endfunction
 
 

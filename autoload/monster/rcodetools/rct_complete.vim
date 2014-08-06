@@ -4,7 +4,7 @@ set cpo&vim
 
 
 function! monster#rcodetools#rct_complete#command(context, file)
-	return printf("rct-complete --completion-class-info --dev --fork --line=%d --column=%d %s", a:context.line, a:context.col, a:file)
+	return printf("rct-complete --completion-class-info --dev --fork --line=%d --column=%d %s", a:context.line, a:context.complete_pos, a:file)
 endfunction
 
 
@@ -28,6 +28,18 @@ function! monster#rcodetools#rct_complete#complete(context)
 	endif
 	call monster#debug_log(result)
 	return monster#rcodetools#parse(result)
+endfunction
+
+
+function! monster#rcodetools#rct_complete#test()
+	let start_time = reltime()
+	let context = monster#current_context()
+	try
+		let result = monster#rcodetools#complete(context)
+		return result
+	finally
+		echom "Complete time " . reltimestr(reltime(start_time))
+	endtry
 endfunction
 
 let &cpo = s:save_cpo

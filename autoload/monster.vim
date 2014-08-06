@@ -62,25 +62,50 @@ function! s:current_context(...)
 \	}, base)
 " \		"cache_keyword" : printf("%d-%d-%d", bufnr("%"), col("."), line(".")),
 endfunction
+function! monster#current_context(...)
+	return call("s:current_context", a:000)
+endfunction
+
+
+
+function! monster#start_complete()
+	call feedkeys("\<C-x>\<C-o>", "n")
+endfunction
 
 
 let s:cache = {}
+function! monster#add_cache(context, data)
+	let s:cache[a:context.cache_keyword] = a:data
+endfunction
+
+
+function! monster#remove_cache(context)
+	unlet! s:cache[a:context.cache_keyword]
+endfunction
+
+
+let g:monster#enable_neocomplete = get(g:, "monster#enable_neocomplete", 0)
+
+
 function! monster#complete(findstart, base)
-	if a:findstart
-		let context = s:current_context({ "col" : col(".") - 1 })
-		if has_key(s:cache, context.cache_keyword)
-			let s:result = s:cache[context.cache_keyword]
-		else
-			let s:result = monster#rcodetools#complete(context)
-			let s:cache[context.cache_keyword] = s:result
-		endif
-		return context.complete_pos
+	if a:findstart == 0
+		try
+			return filter(copy(s:result), 'v:val.word =~ ''^'' . a:base')
+		finally
+			unlet s:result
+		endtry
 	endif
-	try
-		return s:result
-	finally
-		unlet s:result
-	endtry
+	let context = s:current_context({ "col" : col(".") - 1 })
+	if has_key(s:cache, context.cache_keyword)
+		let s:result = s:cache[context.cache_keyword]
+	else
+		let s:result = monster#rcodetools#complete(context)
+		if empty(s:result)
+			return g:monster#enable_neocomplete ? -1 : -3
+		endif
+		call monster#add_cache(context, s:result)
+	endif
+	return context.complete_pos
 endfunction
 
 
