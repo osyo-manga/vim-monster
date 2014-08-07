@@ -21,24 +21,24 @@ function! monster#errmsg(errors)
 endfunction
 
 
-let s:log_data = ""
+let s:log_data_list = []
 function! monster#debug_log(text)
 	if !g:monster#debug
 		return
 	endif
-	let s:log_data .= "---- " . strftime("%c", localtime()) . ' ---- | ' . "\n"
-	if a:0
-		let s:log_data .= (type(a:text) == type("") ? a:1 : string(a:text)) . "\n"
-	endif
+	let log = ""
+	let log .= "---- " . strftime("%c", localtime()) . ' ---- | ' . "\n"
+	let log .= (type(a:text) == type("") ? a:text : string(a:text))
+	call add(s:log_data_list, log)
 endfunction
 
 
 function! monster#get_debug_log()
-	return s:log_data
+	return join(s:log_data_list, "\n")
 endfunction
 
 function! monster#clear_debug_log()
-	let s:log_data = ""
+	let s:log_data_list = []
 endfunction
 
 

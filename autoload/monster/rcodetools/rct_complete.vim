@@ -28,13 +28,16 @@ function! monster#rcodetools#rct_complete#complete(context)
 		call delete(file)
 	endtry
 	if v:shell_error != 0
-		call monster#errmsg(command)
-		call monster#errmsg(result)
+" 		call monster#errmsg(command)
+" 		call monster#errmsg(result)
+		call monster#debug_log(
+\			"rct-complete command : " . command . "\n"
+\		  . "rct-complete result : " . result
+\		)
 		echo "monster.vim - failed rct-complete"
 		return []
 	endif
 	echo "monster.vim - finish rct-complete"
-	call monster#debug_log(result)
 	return monster#rcodetools#parse(result)
 endfunction
 
