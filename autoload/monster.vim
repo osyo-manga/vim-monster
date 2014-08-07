@@ -21,10 +21,24 @@ function! monster#errmsg(errors)
 endfunction
 
 
+let s:log_data = ""
 function! monster#debug_log(text)
-	if g:monster#debug
-		echo a:text
+	if !g:monster#debug
+		return
 	endif
+	let s:log_data .= "---- " . strftime("%c", localtime()) . ' ---- | ' . "\n"
+	if a:0
+		let s:log_data .= (type(a:text) == type("") ? a:1 : string(a:text)) . "\n"
+	endif
+endfunction
+
+
+function! monster#get_debug_log()
+	return s:log_data
+endfunction
+
+function! monster#clear_debug_log()
+	let s:log_data = ""
 endfunction
 
 
@@ -88,20 +102,28 @@ let g:monster#enable_neocomplete = get(g:, "monster#enable_neocomplete", 0)
 
 
 function! monster#complete(findstart, base)
-	if a:findstart == 0
+	if a:findstart == 0 && exists("s:result")
 		try
 			return filter(copy(s:result), 'v:val.word =~ ''^'' . a:base')
 		finally
-			unlet s:result
+			unlet! s:result
 		endtry
 	endif
+
+	let failed = g:monster#enable_neocomplete ? -1 : -3
+
+	" コメント時は補完しない
+	if synIDattr(synIDtrans(synID(line("."), col(".")-1, 1)), 'name') ==# "Comment"
+		return failed
+	endif
+
 	let context = s:current_context({ "col" : col(".") - 1 })
 	if has_key(s:cache, context.cache_keyword)
 		let s:result = s:cache[context.cache_keyword]
 	else
 		let s:result = monster#rcodetools#complete(context)
 		if empty(s:result)
-			return g:monster#enable_neocomplete ? -1 : -3
+			return failed
 		endif
 		call monster#add_cache(context, s:result)
 	endif

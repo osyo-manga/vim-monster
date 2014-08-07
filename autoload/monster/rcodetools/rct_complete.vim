@@ -8,6 +8,11 @@ function! monster#rcodetools#rct_complete#command(context, file)
 endfunction
 
 
+function! monster#rcodetools#rct_complete#check()
+	return executable("rct-complete")
+endfunction
+
+
 function! monster#rcodetools#rct_complete#complete(context)
 	if !executable("rct-complete")
 		call monster#errmsg("No executable 'rct-complete' command.")
@@ -15,6 +20,7 @@ function! monster#rcodetools#rct_complete#complete(context)
 		return
 	endif
 	try
+		echo "monster.vim - start rct-complete"
 		let file = monster#make_tempfile(a:context.bufnr, "rb")
 		let command = monster#rcodetools#rct_complete#command(a:context, file)
 		let result = system(command)
@@ -24,8 +30,10 @@ function! monster#rcodetools#rct_complete#complete(context)
 	if v:shell_error != 0
 		call monster#errmsg(command)
 		call monster#errmsg(result)
+		echo "monster.vim - failed rct-complete"
 		return []
 	endif
+	echo "monster.vim - finish rct-complete"
 	call monster#debug_log(result)
 	return monster#rcodetools#parse(result)
 endfunction
