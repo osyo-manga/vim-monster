@@ -3,7 +3,7 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 
-let g:monster#debug = get(g:, "monster#debug", 0)
+let g:monster#debug = get(g:, "monster#debug", 1)
 
 
 function! monster#errmsg(errors)
