@@ -8,7 +8,7 @@ let g:monster#debug = get(g:, "monster#debug", 1)
 
 function! monster#errmsg(errors)
 	if type(a:errors) != type([])
-		return monster#errmsg(split("monster.vim : " . a:errors, '[\n\r]'))
+		return monster#errmsg(split("[monster.vim] " . a:errors, '[\n\r]'))
 	endif
 	echohl ErrorMsg
 	try
