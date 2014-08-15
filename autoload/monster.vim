@@ -42,6 +42,11 @@ function! monster#clear_debug_log()
 endfunction
 
 
+function! monster#current_context(...)
+	return call("monster#context#get_current", a:000)
+endfunction
+
+
 function! s:tempfile(ext)
 	return strftime("%Y-%m-%d-%H-%M-%S.") . a:ext
 endfunction
@@ -64,51 +69,32 @@ function! monster#make_tempfile(...)
 endfunction
 
 
-function! s:current_context(...)
+function! monster#start_complete(...)
 	let base = get(a:, 1, {})
-	let complete_pos = strwidth(matchstr(getline("."), '\zs.\{-}\ze\w*$'))
-	return extend({
-\		"bufnr" : bufnr("%"),
-\		"col"  : col("."),
-\		"complete_pos" : complete_pos,
-\		"line" : line("."),
-\		"cache_keyword" : printf("%d-%d-%d", bufnr("%"), complete_pos, line(".")),
-\	}, base)
-" \		"cache_keyword" : printf("%d-%d-%d", bufnr("%"), col("."), line(".")),
-endfunction
-function! monster#current_context(...)
-	return call("s:current_context", a:000)
+	let context = extend(monster#context#get_current(), base)
+	PP context
+	if mode() !~# 'i'
+		startinsert!
+		return feedkeys("\<C-R>=monster#start_complete()\<CR>", "n")
+	endif
+	call complete(context.start_col + 1, monster#completion#complete(context))
+	return ""
 endfunction
 
-
-
-function! monster#start_complete()
-	call feedkeys("\<C-x>\<C-o>", "n")
-endfunction
-
-
-let s:cache = {}
-function! monster#add_cache(context, data)
-	let s:cache[a:context.cache_keyword] = a:data
-endfunction
-
-
-function! monster#remove_cache(context)
-	unlet! s:cache[a:context.cache_keyword]
-endfunction
 
 
 let g:monster#enable_neocomplete = get(g:, "monster#enable_neocomplete", 0)
 
 
-function! monster#complete(findstart, base)
-	if a:findstart == 0 && exists("s:result")
+function! monster#omnifunc(findstart, base)
+	if a:findstart == 0
 		try
 			return filter(copy(s:result), 'v:val.word =~ ''^'' . a:base')
 		finally
 			unlet! s:result
 		endtry
 	endif
+	unlet! s:result
 
 	let failed = g:monster#enable_neocomplete ? -1 : -3
 
@@ -117,40 +103,19 @@ function! monster#complete(findstart, base)
 		return failed
 	endif
 
-	let context = s:current_context({ "col" : col(".") - 1 })
-	if has_key(s:cache, context.cache_keyword)
-		let s:result = s:cache[context.cache_keyword]
-	else
-		let s:result = monster#rcodetools#complete(context)
-		if empty(s:result)
-			return failed
-		endif
-		call monster#add_cache(context, s:result)
+	let context = monster#context#get_current()
+	let s:result = monster#completion#complete(context)
+	if empty(s:result)
+		return failed
 	endif
-	return context.complete_pos
+	return context.start_col
 endfunction
 
 
 augroup monster
 	autocmd!
-	autocmd InsertEnter * let s:cache = {}
+	autocmd InsertEnter * call monster#cache#clear_all()
 augroup END
-
-
-function! monster#test()
-" 	let start_time = reltime()
-" 	let result = monster#complete(0, 0)
-" 	echo reltimestr(reltime(start_time))
-" 	return result
-	let start_time = reltime()
-	let context = s:current_context()
-	try
-		let result = monster#rcodetools#complete(context)
-		return result
-	finally
-		echom "Complete : " . reltimestr(reltime(start_time))
-	endtry
-endfunction
 
 
 let &cpo = s:save_cpo

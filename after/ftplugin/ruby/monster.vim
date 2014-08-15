@@ -1,9 +1,9 @@
 
-if !monster#rcodetools#rct_complete#check()
-	finish
-endif
+" if !monster#rcodetools#rct_complete#check()
+" 	finish
+" endif
 
-setlocal omnifunc=monster#complete
+setlocal omnifunc=monster#omnifunc
 
 
 " augroup monster-ftplugin-ruby
