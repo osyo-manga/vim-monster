@@ -34,5 +34,12 @@ function! monster#cache#get(context)
 endfunction
 
 
+
+augroup monster-cache
+	autocmd!
+	autocmd InsertEnter * call monster#cache#clear_all()
+augroup END
+
+
 let &cpo = s:save_cpo
 unlet s:save_cpo

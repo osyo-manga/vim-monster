@@ -23,22 +23,16 @@ endfunction
 
 let s:log_data_list = []
 function! monster#debug_log(text)
-	if !g:monster#debug
-		return
-	endif
-	let log = ""
-	let log .= "---- " . strftime("%c", localtime()) . ' ---- | ' . "\n"
-	let log .= (type(a:text) == type("") ? a:text : string(a:text))
-	call add(s:log_data_list, log)
+	return monster#debug#echo(a:text)
 endfunction
 
 
 function! monster#get_debug_log()
-	return join(s:log_data_list, "\n")
+	return monster#debug#log()
 endfunction
 
 function! monster#clear_debug_log()
-	let s:log_data_list = []
+	return monster#debug#clear_log()
 endfunction
 
 
@@ -69,16 +63,50 @@ function! monster#make_tempfile(...)
 endfunction
 
 
-function! monster#start_complete(...)
-	let base = get(a:, 1, {})
-	let context = extend(monster#context#get_current(), base)
-	PP context
-	if mode() !~# 'i'
-		startinsert!
-		return feedkeys("\<C-R>=monster#start_complete()\<CR>", "n")
-	endif
-	call complete(context.start_col + 1, monster#completion#complete(context))
+function! monster#_start_complete()
+	call complete(s:start_complete_start_col, s:start_complete_items)
+	unlet! s:start_complete_start_col
+	unlet! s:start_complete_items
 	return ""
+endfunction
+
+
+function! monster#start_complete(...)
+	let force = get(a:, 1, 0)
+	let base = get(a:, 2, get(s:, "start_complete_context", {}))
+	let context = extend(monster#context#get_current(), base)
+	let s:start_complete_start_col = context.start_col + 1
+	
+	if context.start_col > col(".")
+		return -1
+	endif
+	let baseline = getline(".")[context.start_col : col(".")]
+	if baseline =~ '\s'
+		return -1
+	endif
+
+	let s:start_complete_items = monster#completion#complete(context)
+	call filter(s:start_complete_items, 'v:val.word =~ ''^'' . baseline')
+	if empty(s:start_complete_items)
+		return -1
+	endif
+
+	startinsert!
+	let s:start_complete_context = base
+	call feedkeys("\<C-R>=monster#_start_complete()\<CR>\<C-p>", "n")
+" 	call feedkeys("\<C-R>=monster#start_complete()\<CR>", "n")
+	return ""
+" 	if mode() !~# 'i' && !force
+" 		return ""
+" 	endif
+" 	if mode() !~# 'i'
+" 		startinsert!
+" 		let s:start_complete_context = base
+" 		call feedkeys("\<C-R>=monster#start_complete()\<CR>", "n")
+" 		return ""
+" 	endif
+" 	call complete(context.start_col + 1, monster#completion#complete(context))
+" 	return ""
 endfunction
 
 
@@ -88,9 +116,15 @@ let g:monster#enable_neocomplete = get(g:, "monster#enable_neocomplete", 0)
 
 function! monster#omnifunc(findstart, base)
 	if a:findstart == 0
+		if empty(s:result)
+			return []
+		endif
 		try
 			return filter(copy(s:result), 'v:val.word =~ ''^'' . a:base')
 		finally
+			echom "homu"
+			echom string(s:result)
+			echo "monster.vim - finish completion"
 			unlet! s:result
 		endtry
 	endif
@@ -100,22 +134,20 @@ function! monster#omnifunc(findstart, base)
 
 	" コメント時は補完しない
 	if synIDattr(synIDtrans(synID(line("."), col(".")-1, 1)), 'name') ==# "Comment"
+		echo "monster.vim - failed completion"
 		return failed
 	endif
 
+	echo "monster.vim - start completion"
 	let context = monster#context#get_current()
 	let s:result = monster#completion#complete(context)
 	if empty(s:result)
+		echo "monster.vim - empty completion"
 		return failed
 	endif
 	return context.start_col
 endfunction
 
-
-augroup monster
-	autocmd!
-	autocmd InsertEnter * call monster#cache#clear_all()
-augroup END
 
 
 let &cpo = s:save_cpo
