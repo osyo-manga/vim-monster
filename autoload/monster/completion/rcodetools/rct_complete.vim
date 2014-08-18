@@ -46,7 +46,7 @@ function! monster#completion#rcodetools#rct_complete#test()
 	let start_time = reltime()
 	let context = monster#context#get_current()
 	try
-		let result = monster#completion#rcodetools#complete(context)
+		let result = monster#completion#rcodetools#rct_complete#complete(context)
 		return { "context" : context, "result" : result }
 	finally
 		echom "Complete time " . reltimestr(reltime(start_time))

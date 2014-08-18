@@ -13,7 +13,7 @@ function! monster#context#get_current(...)
 \		"start_col"  : start_col,
 \		"complete_pos" : complete_pos,
 \		"line" : line("."),
-\		"cache_keyword" : printf("%d-%d-%d", bufnr("%"), complete_pos, line(".")),
+\		"cache_keyword" : printf("%d-%d-%d-%s", bufnr("%"), complete_pos, line("."), getline(".")[:start_col-1]),
 \	}, base)
 endfunction
 

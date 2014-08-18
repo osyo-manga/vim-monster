@@ -63,50 +63,34 @@ function! monster#make_tempfile(...)
 endfunction
 
 
-function! monster#_start_complete()
-	call complete(s:start_complete_start_col, s:start_complete_items)
-	unlet! s:start_complete_start_col
-	unlet! s:start_complete_items
-	return ""
-endfunction
-
-
 function! monster#start_complete(...)
 	let force = get(a:, 1, 0)
 	let base = get(a:, 2, get(s:, "start_complete_context", {}))
 	let context = extend(monster#context#get_current(), base)
-	let s:start_complete_start_col = context.start_col + 1
-	
-	if context.start_col > col(".")
-		return -1
+
+	if mode() !~# 'i' && !force
+		return ""
 	endif
+	if mode() !~# 'i'
+		startinsert!
+		let s:start_complete_context = base
+		call feedkeys("\<C-R>=monster#start_complete()\<CR>", "n")
+		return ""
+	endif
+
 	let baseline = getline(".")[context.start_col : col(".")]
-	if baseline =~ '\s'
-		return -1
+" 	if baseline =~ '\s'
+" 		return ""
+" 	endif
+
+	let items = monster#completion#complete(context)
+	call filter(items, 'v:val.word =~ ''^'' . baseline')
+	if empty(items)
+		return ""
 	endif
 
-	let s:start_complete_items = monster#completion#complete(context)
-	call filter(s:start_complete_items, 'v:val.word =~ ''^'' . baseline')
-	if empty(s:start_complete_items)
-		return -1
-	endif
-
-	startinsert!
-	let s:start_complete_context = base
-	call feedkeys("\<C-R>=monster#_start_complete()\<CR>\<C-p>", "n")
-" 	call feedkeys("\<C-R>=monster#start_complete()\<CR>", "n")
+	call complete(context.start_col + 1, items)
 	return ""
-" 	if mode() !~# 'i' && !force
-" 		return ""
-" 	endif
-" 	if mode() !~# 'i'
-" 		startinsert!
-" 		let s:start_complete_context = base
-" 		call feedkeys("\<C-R>=monster#start_complete()\<CR>", "n")
-" 		return ""
-" 	endif
-" 	call complete(context.start_col + 1, monster#completion#complete(context))
-" 	return ""
 endfunction
 
 
@@ -122,8 +106,6 @@ function! monster#omnifunc(findstart, base)
 		try
 			return filter(copy(s:result), 'v:val.word =~ ''^'' . a:base')
 		finally
-			echom "homu"
-			echom string(s:result)
 			echo "monster.vim - finish completion"
 			unlet! s:result
 		endtry
@@ -131,6 +113,12 @@ function! monster#omnifunc(findstart, base)
 	unlet! s:result
 
 	let failed = g:monster#enable_neocomplete ? -1 : -3
+" 	PP! monster#debug#callstack()
+" 	if monster#debug#callstack()[0] == "monster#omnifunc"
+" 		let failed = -3
+" 	else
+" 		let failed = -1
+" 	endif
 
 	" コメント時は補完しない
 	if synIDattr(synIDtrans(synID(line("."), col(".")-1, 1)), 'name') ==# "Comment"
@@ -142,8 +130,8 @@ function! monster#omnifunc(findstart, base)
 	let context = monster#context#get_current()
 	let s:result = monster#completion#complete(context)
 	if empty(s:result)
-		echo "monster.vim - empty completion"
-		return failed
+		echom "monster.vim - empty completion"
+		return -1
 	endif
 	return context.start_col
 endfunction
