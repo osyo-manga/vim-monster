@@ -8,10 +8,17 @@ let s:Reunions = vital#of("vital").import("Reunions")
 " 補完モードを終了するハック
 function! s:exit_completion_mode()
 " 	doautocmd CursorHoldI
+" 	if !pumvisible()
+" 		return ""
+" 	endif
 	execute "normal! \<C-g>\<ESC>"
 	return ""
 endfunction
-inoremap <silent> <Plug>(monster-exit-completion-mode) <C-r>=<SID>exit_completion_mode()<CR><Right>
+
+
+" inoremap <silent> <Plug>(monster-exit-completion-mode) <C-r>=<SID>exit_completion_mode()<CR><Right>
+
+inoremap <silent><expr> <Plug>(monster-exit-completion-mode) "\<C-r>=\<SID>exit_completion_mode()\<CR>" . (col(".") == 1 ? "" : "\<Right>")
 
 
 function! monster#completion#rcodetools#async_rct_complete#complete(context)
@@ -92,7 +99,9 @@ let s:count = 0
 augroup monster-completion-rcodetools-async_rct_complete
 	autocmd!
 " 	autocmd CursorHoldI * echo s:count | let s:count += 1 | call feedkeys(mode() =~# '[iR]' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
-	autocmd CursorHoldI * call s:Reunions.update_in_cursorhold(1)
+	autocmd CursorHoldI * echo s:count | let s:count += 1
+	autocmd InsertCharPre,CursorHoldI * call s:Reunions.update_in_cursorhold(1)
+" 	autocmd InsertCharPre * call feedkeys("\<Plug>(monster-exit-completion-mode-hoge)")
 	autocmd InsertEnter,InsertLeave * call monster#completion#rcodetools#async_rct_complete#cancel()
 augroup END
 
