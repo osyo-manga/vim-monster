@@ -112,7 +112,8 @@ function! monster#omnifunc(findstart, base)
 	endif
 	unlet! s:result
 
-	let failed = g:monster#enable_neocomplete ? -1 : -3
+" 	let failed = g:monster#enable_neocomplete ? -1 : -3
+	let failed = -1
 " 	PP! monster#debug#callstack()
 " 	if monster#debug#callstack()[0] == "monster#omnifunc"
 " 		let failed = -3
