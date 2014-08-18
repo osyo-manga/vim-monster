@@ -99,7 +99,7 @@ let s:count = 0
 augroup monster-completion-rcodetools-async_rct_complete
 	autocmd!
 " 	autocmd CursorHoldI * echo s:count | let s:count += 1 | call feedkeys(mode() =~# '[iR]' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
-	autocmd CursorHoldI * echo s:count | let s:count += 1
+" 	autocmd CursorHoldI * echo s:count | let s:count += 1
 	autocmd InsertCharPre,CursorHoldI * call s:Reunions.update_in_cursorhold(1)
 " 	autocmd InsertCharPre * call feedkeys("\<Plug>(monster-exit-completion-mode-hoge)")
 	autocmd InsertEnter,InsertLeave * call monster#completion#rcodetools#async_rct_complete#cancel()
