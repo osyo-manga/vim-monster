@@ -26,7 +26,8 @@ endfunction
 
 
 function! s:_repeat_cursorhold()
-	call feedkeys(mode() =~# '[iR]' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
+	call feedkeys(mode() =~# '[iR]' ? "\<C-r>\<Esc>" : "g\<Esc>", 'n')
+" 	call feedkeys(mode() =~# '[iR]' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
 endfunction
 
 

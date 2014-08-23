@@ -5,20 +5,8 @@ set cpo&vim
 call vital#of("monster").unload()
 let s:Reunions = vital#of("monster").import("Reunions")
 
-" 補完モードを終了するハック
-function! s:exit_completion_mode()
-" 	doautocmd CursorHoldI
-" 	if !pumvisible()
-" 		return ""
-" 	endif
-	execute "normal! \<C-g>\<ESC>"
-	return ""
-endfunction
 
-
-" inoremap <silent> <Plug>(monster-exit-completion-mode) <C-r>=<SID>exit_completion_mode()<CR><Right>
-
-inoremap <silent><expr> <Plug>(monster-exit-completion-mode) "\<C-r>=\<SID>exit_completion_mode()\<CR>" . (col(".") == 1 ? "" : "\<Right>")
+inoremap <silent> <Plug>(monster-exit-completion-mode) <C-r><Esc><C-g><Esc>
 
 
 function! monster#completion#rcodetools#async_rct_complete#complete(context)
@@ -49,8 +37,9 @@ function! monster#completion#rcodetools#async_rct_complete#complete(context)
 		if monster#context#get_current().cache_keyword !=# self.context.cache_keyword
 			return
 		endif
-		call monster#start_complete(0, self.context)
-		call feedkeys("\<C-p>")
+		if monster#start_complete(0, self.context) == 0
+			call feedkeys("\<C-p>")
+		endif
 	endfunction
 
 	call monster#debug_log(
@@ -98,10 +87,12 @@ endfunction
 let s:count = 0
 augroup monster-completion-rcodetools-async_rct_complete
 	autocmd!
-" 	autocmd CursorHoldI * echo s:count | let s:count += 1 | call feedkeys(mode() =~# '[iR]' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
 " 	autocmd CursorHoldI * echo s:count | let s:count += 1
-	autocmd InsertCharPre,CursorHoldI * call s:Reunions.update_in_cursorhold(1)
+\|	call feedkeys(mode() =~# '[iR]' ? "\<C-r>\<Esc>" : "g\<Esc>", 'n')
+
 " 	autocmd InsertCharPre * call feedkeys("\<Plug>(monster-exit-completion-mode-hoge)")
+
+	autocmd InsertCharPre,CursorHoldI * call s:Reunions.update_in_cursorhold(1)
 	autocmd InsertEnter,InsertLeave * call monster#completion#rcodetools#async_rct_complete#cancel()
 augroup END
 

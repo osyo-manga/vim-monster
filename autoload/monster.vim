@@ -69,13 +69,13 @@ function! monster#start_complete(...)
 	let context = extend(monster#context#get_current(), base)
 
 	if mode() !~# 'i' && !force
-		return ""
+		return -1
 	endif
 	if mode() !~# 'i'
 		startinsert!
 		let s:start_complete_context = base
 		call feedkeys("\<C-R>=monster#start_complete()\<CR>", "n")
-		return ""
+		return 0
 	endif
 
 	let baseline = getline(".")[context.start_col : col(".")]
@@ -86,11 +86,11 @@ function! monster#start_complete(...)
 	let items = monster#completion#complete(context)
 	call filter(items, 'v:val.word =~ ''^'' . baseline')
 	if empty(items)
-		return ""
+		return -1
 	endif
 
 	call complete(context.start_col + 1, items)
-	return ""
+	return 0
 endfunction
 
 
