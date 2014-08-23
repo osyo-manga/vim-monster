@@ -7,11 +7,13 @@ let g:monster#completion#backend = get(g:, "monster#completion#backend", "rcodet
 
 
 function! monster#completion#complete(context)
-	let result = monster#cache#get(a:context)
-	if !empty(result)
-		return result
+	if monster#cache#is_exists(a:context)
+		return monster#cache#get(a:context)
 	endif
 	let result = monster#completion#{g:monster#completion#backend}#complete(a:context)
+	if empty(result)
+		return []
+	endif
 	return monster#cache#add(a:context, result)
 endfunction
 
