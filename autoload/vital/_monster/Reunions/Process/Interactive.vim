@@ -37,8 +37,10 @@ function! s:base.input(text, ...)
 	if !self.is_exit()
 		return -1
 	endif
+	call self.wait()
 	let vimproc = self.__reunions_process_base.vimproc
 	call vimproc.stdin.write(a:text . "\n")
+	let self.__reunions_process_interactive.log .= self.__reunions_process_base.result
 	let self.__reunions_process_base.result = ""
 	let self.__reunions_process_base.status = "processing"
 	let self.__reunions_process_interactive.endpat
@@ -72,15 +74,19 @@ function! s:base.kill(...)
 endfunction
 
 
+function! s:base.log()
+	return self.__reunions_process_interactive.log . self.__reunions_process_base.result
+endfunction
+
+
 function! s:make(command, endpat)
 	let process = s:Base.make(a:command)
 " 	call process.start()
 	call extend(process, deepcopy(s:base))
+	let process.__reunions_process_interactive.log = ""
 	let process.__reunions_process_interactive.endpat = a:endpat
 	return process
 endfunction
 
 
 
-let &cpo = s:save_cpo
-unlet s:save_cpo

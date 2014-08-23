@@ -16,6 +16,7 @@ function! s:_vital_depends()
 	return [
 \		"Reunions.Task.Group",
 \		"Reunions.Task.Timer",
+\		"Reunions.Task.CursorHold",
 \	]
 endfunction
 
