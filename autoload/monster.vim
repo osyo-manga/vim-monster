@@ -42,7 +42,7 @@ endfunction
 
 
 function! s:tempfile(ext)
-	return strftime("%Y-%m-%d-%H-%M-%S.") . a:ext
+	return strftime("monster-vim-%Y-%m-%d-%H-%M-%S.") . a:ext
 endfunction
 
 
