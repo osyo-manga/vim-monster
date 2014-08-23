@@ -26,4 +26,16 @@ let g:neocomplete#sources#omni#input_patterns = {
 \}
 ```
 
+## Setting by async completion
+
+```vim
+" Set async completion.
+let g:monster#completion#rcodetools#backend = "async_rct_complete"
+
+" Use neocomplete.vim
+let g:neocomplete#force_omni_input_patterns = {
+\	'ruby' : '[^. *\t]\.\|\h\w*::',
+\}
+```
+
 
