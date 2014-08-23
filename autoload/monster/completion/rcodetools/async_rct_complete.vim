@@ -2,8 +2,8 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-call vital#of("vital").unload()
-let s:Reunions = vital#of("vital").import("Reunions")
+call vital#of("monster").unload()
+let s:Reunions = vital#of("monster").import("Reunions")
 
 " 補完モードを終了するハック
 function! s:exit_completion_mode()
