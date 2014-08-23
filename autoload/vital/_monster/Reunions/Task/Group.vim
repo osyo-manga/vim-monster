@@ -33,7 +33,7 @@ function! s:base.add_log(mes)
 	let self.variables.log = self.variables.log
 \		. "\n\n------------------------------\n"
 \		. a:mes . "\n"
-\		. 'Caught "' . v:exception "\n"
+\		. 'Caught "' . v:exception . "\n"
 \		. '" in ' . v:throwpoint . ""
 endfunction
 

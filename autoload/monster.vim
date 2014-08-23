@@ -74,7 +74,7 @@ function! monster#start_complete(...)
 	if mode() !~# 'i'
 		startinsert!
 		let s:start_complete_context = base
-		call feedkeys("\<C-R>=monster#start_complete()\<CR>", "n")
+		call feedkeys("\<C-R>=monster#start_complete()?'':''\<CR>", "n")
 		return 0
 	endif
 

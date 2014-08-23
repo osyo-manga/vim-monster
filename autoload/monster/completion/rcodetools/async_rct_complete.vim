@@ -30,6 +30,7 @@ function! monster#completion#rcodetools#async_rct_complete#complete(context)
 
 		if a:result.status != "success"
 			echo "monster.vim - failed async completion"
+			call monster#cache#add(self.context, [])
 			return
 		endif
 		call monster#cache#add(self.context, monster#completion#rcodetools#parse(a:output))
@@ -72,12 +73,16 @@ endfunction
 function! monster#completion#rcodetools#async_rct_complete#test()
 	let start_time = reltime()
 	let context = monster#context#get_current()
+	let old_debug = g:monster#debug#enable
+	let g:monster#debug#enable = 1
+	call monster#debug#clear_log()
 	try
 		call monster#completion#rcodetools#async_rct_complete#complete(context)
 		call s:process.wait()
 		let result = monster#cache#get(context)
-		return { "context" : context, "result" : result }
+		return { "context" : context, "result" : result, "log" : monster#debug#log() }
 	finally
+		let g:monster#debug#enable = old_debug
 		echom "Complete time " . reltimestr(reltime(start_time))
 	endtry
 endfunction
