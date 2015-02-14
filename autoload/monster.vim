@@ -97,10 +97,14 @@ endfunction
 
 let g:monster#enable_neocomplete = get(g:, "monster#enable_neocomplete", 0)
 
+let g:monster#enable = get(g:, "monster#enable", 1)
 
 function! monster#omnifunc(findstart, base)
+	if g:monster#enable == 0
+		return 0
+	endif
 	if a:findstart == 0
-		if empty(s:result)
+		if empty(get(s:, "result", {}))
 			return []
 		endif
 		try
