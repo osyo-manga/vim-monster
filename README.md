@@ -28,6 +28,9 @@ let g:neocomplete#sources#omni#input_patterns = {
 
 ## Setting by async completion
 
+* Requirement
+ * [vimproc.vim](https://github.com/Shougo/vimproc.vim)
+
 ```vim
 " Set async completion.
 let g:monster#completion#rcodetools#backend = "async_rct_complete"
