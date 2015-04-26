@@ -4,6 +4,8 @@ set cpo&vim
 
 let g:monster#completion#rcodetools#backend = get(g:, "monster#completion#rcodetools#backend", "rct_complete")
 
+let g:monster#completion#rcodetools#complete_command = get(g:, "monster#completion#rcodetools#complete_command", "rct-complete")
+
 function! s:parse(text)
 	let parsed = split(a:text, '\t')
 	return {
