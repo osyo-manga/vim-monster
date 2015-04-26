@@ -33,14 +33,14 @@
     let g:monster#completion#rcodetools#backend = "async_rct_complete"
 
     " Use neocomplete.vim
-    let g:neocomplete#force_omni_input_patterns = {
+    let g:neocomplete#sources#omni#input_patterns = {
     \	'ruby' : '[^. *\t]\.\|\h\w*::',
     \}
 <
 
 非同期でコード補完を行うときの流れは以下のようになります。
 
-1．|g:neocomplete#force_omni_input_patterns| にマッチしたパターンを入力すると
+1．|g:neocomplete#sources#omni#input_patterns| にマッチしたパターンを入力すると
    補完開始
 2．非同期で処理が行われるので補完中は処理がブロックされずに続けて入力する事
    ができる
