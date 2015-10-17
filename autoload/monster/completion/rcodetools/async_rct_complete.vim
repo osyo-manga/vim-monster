@@ -39,7 +39,9 @@ function! monster#completion#rcodetools#async_rct_complete#complete(context)
 			return
 		endif
 		if monster#start_complete(0, self.context) == 0
-			call feedkeys("\<C-p>")
+			if &completeopt !~ '\(noinsert\|noselect\)'
+				call feedkeys("\<C-p>")
+			endif
 		endif
 	endfunction
 
