@@ -5,9 +5,17 @@ Ruby のコード補完プラグイン
 
 ## Requirement
 
+どちらかをインストールします。
+
 * __gem__
  * `gem install rcodetools`
+ * `gem install solargraph`
 
+solargraph を使う場合は以下を設定します。
+
+```vim
+let g:monster#completion#backend = 'solargraph'
+```
 
 ## Screencapture
 
@@ -34,6 +42,7 @@ let g:neocomplete#sources#omni#input_patterns = {
 ```vim
 " Set async completion.
 let g:monster#completion#rcodetools#backend = "async_rct_complete"
+" Or let g:monster#completion#solargraph#backend = "async_solargraph_suggest"
 
 " With neocomplete.vim
 let g:neocomplete#sources#omni#input_patterns = {
@@ -42,6 +51,7 @@ let g:neocomplete#sources#omni#input_patterns = {
 
 " With deoplete.nvim
 let g:monster#completion#rcodetools#backend = "async_rct_complete"
+" Or let g:monster#completion#solargraph#backend = "async_solargraph_suggest"
 let g:deoplete#sources#omni#input_patterns = {
 \   "ruby" : '[^. *\t]\.\w*\|\h\w*::',
 \}

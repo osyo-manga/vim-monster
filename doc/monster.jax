@@ -1,14 +1,16 @@
-*monster.txt*	 rcodetools を利用した Ruby のコード補完を行う
+*monster.txt*	 rcodetools/solargraph を利用した Ruby のコード補完を行う
 
 
 ==============================================================================
 概要						*monster-introduction*
 
-*monster* は rcodetools を利用した Ruby のコード補完を行うプラグインです。
+*monster* は rcodetools 又は solargraph を利用した Ruby のコード補完を行うプラ
+グインです。
 
 - Requires
  - gem
    $ gem install rcodetools
+   $ gem install solargraph
  - plugin
     vimproc.vim  - https://github.com/Shougo/vimproc.vim
     NOTE: 非同期で補完を行う場合にのみ必要
@@ -25,12 +27,17 @@
 	\   "ruby" : '[^. *\t]\.\w*\|\h\w*::',
 	\}
 <
+と、設定します。rcodecools の代わりに solargraph を使う場合は
+>
+	let g:monster#completion#backend = 'solargraph'
+<
 と、設定します。
 また、非同期でコード補完を行ないたい場合は、以下のように設定を行う必要がありま
 す。
 >
     " Set async completion.
     let g:monster#completion#rcodetools#backend = "async_rct_complete"
+    " Or let g:monster#completion#solargraph#backend = "async_solargraph_suggest"
 
     " Use neocomplete.vim
     let g:neocomplete#sources#omni#input_patterns = {
