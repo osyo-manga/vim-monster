@@ -28,8 +28,8 @@ function! monster#completion#rcodetools#rct_complete#complete(context)
 		call delete(file)
 	endtry
 	call monster#debug_log(
-\		"[rct_complete.vm] rct-complete command : " . command . "\n"
-\	  . "[rct_complete.vm] rct-complete result : \n" . result
+\		"[rct_complete.vim] rct-complete command : " . command . "\n"
+\	  . "[rct_complete.vim] rct-complete result : \n" . result
 \	)
 	if v:shell_error != 0
 " 		call monster#errmsg(command)
