@@ -25,7 +25,7 @@ function! monster#completion#solargraph#solargraph_suggest#complete(context)
 	function! process.then(output, result)
 		call delete(self.tempfile)
 		call monster#debug_log(
-\			"[async_solargraph_suggest.vm] solargraph_suggest result : \n" . string(a:result) . "\n"
+\			"[async_solargraph_suggest.vim] solargraph_suggest result : \n" . string(a:result) . "\n"
 \		)
 
 		if a:result.status != "success"
@@ -46,7 +46,7 @@ function! monster#completion#solargraph#solargraph_suggest#complete(context)
 	endfunction
 
 	call monster#debug_log(
-\		"[async_solargraph_suggest.vm] solargraph command : " . command . "\n"
+\		"[async_solargraph_suggest.vim] solargraph command : " . command . "\n"
 \	)
 
 	let s:process = process
