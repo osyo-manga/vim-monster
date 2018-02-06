@@ -2,7 +2,6 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-call vital#of("monster").unload()
 let s:Reunions = vital#of("monster").import("Reunions")
 
 
@@ -25,7 +24,7 @@ function! monster#completion#rcodetools#async_rct_complete#complete(context)
 	function! process.then(output, result)
 		call delete(self.tempfile)
 		call monster#debug_log(
-\			"[async_rct_complete.vim] rct-complete result : \n" . string(a:result) . "\n"
+\			"[async_rct_complete.vm] rct-complete result : \n" . string(a:result) . "\n"
 \		)
 
 		if a:result.status != "success"
@@ -46,7 +45,7 @@ function! monster#completion#rcodetools#async_rct_complete#complete(context)
 	endfunction
 
 	call monster#debug_log(
-\		"[async_rct_complete.vim] rct-complete command : " . command . "\n"
+\		"[async_rct_complete.vm] rct-complete command : " . command . "\n"
 \	)
 
 	let s:process = process
