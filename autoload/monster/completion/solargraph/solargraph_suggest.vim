@@ -30,7 +30,6 @@ function! monster#completion#solargraph#solargraph_suggest#complete(context)
 			set shellredir=>%s\ 2>/dev/null
 		endif
 		let result = system(command)
-		let g:hoge = result
 	finally
 		call delete(file)
 		let &shellredir = shellredir
