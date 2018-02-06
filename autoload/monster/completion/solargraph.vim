@@ -17,7 +17,6 @@ endfunction
 
 
 function! monster#completion#solargraph#parse(result)
-	let g:hoge = a:result
 	return map(json_decode(a:result).suggestions, "s:item(v:val)")
 endfunction
 
