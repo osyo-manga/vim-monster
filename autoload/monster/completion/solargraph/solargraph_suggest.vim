@@ -4,12 +4,18 @@ set cpo&vim
 
 
 function! monster#completion#solargraph#solargraph_suggest#command(context, file)
-	return printf(g:monster#completion#solargraph#complete_command . " suggest --line=%d --column=%d %s", a:context.line-1, a:context.complete_pos, a:file)
+	return printf(
+\		"curl -s -F line=%d -F column=%d -F filename=%s -F text=@%s http://localhost:%d/suggest",
+\			a:context.line-1,
+\			a:context.complete_pos,
+\			a:file,
+\			a:file,
+\			g:monster#completion#solargraph#http_port)
 endfunction
 
 
 function! monster#completion#solargraph#solargraph_suggest#check()
-	return executable("solargraph")
+	return executable("solargraph") && executable("curl")
 endfunction
 
 
@@ -19,24 +25,34 @@ function! monster#completion#solargraph#solargraph_suggest#complete(context)
 		call monster#errmsg("Please install 'gem install solargraph'.")
 		return
 	endif
+	if !exists('s:job')
+		let args = ["solargraph.bat", "server", "--port=".g:monster#completion#solargraph#http_port]
+		let s:job = job_start(args)
+		let g:moge = s:job
+		augroup MonsterSolargraph
+			au!
+			au VimLeave * call job_stop(s:job)
+		augroup END
+	endif
 	try
-		let shellredir = &shellredir
+		"let shellredir = &shellredir
 " 		echo "monster.vim - start solargraph"
 		let file = monster#make_tempfile(a:context.bufnr, "rb")
 		let command = monster#completion#solargraph#solargraph_suggest#command(a:context, file)
-		if has("win32")
-			set shellredir=>%s\ 2>NUL
-		else
-			set shellredir=>%s\ 2>/dev/null
-		endif
+		let g:moge = command
+		"if has("win32")
+			"set shellredir=>%s\ 2>NUL
+		"else
+			"set shellredir=>%s\ 2>/dev/null
+		"endif
 		let result = system(command)
 	finally
 		call delete(file)
-		let &shellredir = shellredir
+		"let &shellredir = shellredir
 	endtry
 	call monster#debug_log(
 \		"[solargraph_suggest.vim] solargraph command : " . command . "\n"
-\	  . "[solargraph_suggest.vim] solargraph result : \n" . result
+\  	. "[solargraph_suggest.vim] solargraph result : \n" . result
 \	)
 	if v:shell_error != 0
 " 		call monster#errmsg(command)
