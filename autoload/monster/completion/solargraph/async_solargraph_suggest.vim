@@ -8,7 +8,7 @@ let s:Reunions = vital#of("monster").import("Reunions")
 inoremap <silent> <Plug>(monster-exit-completion-mode) <C-r><Esc><C-g><Esc>
 
 
-function! monster#completion#solargraph#solargraph_suggest#complete(context)
+function! monster#completion#solargraph#async_solargraph_suggest#complete(context)
 	call monster#completion#solargraph#async_solargraph_suggest#cancel()
 	if !executable("solargraph")
 		call monster#errmsg("No executable 'solargraph' command.")
