@@ -136,7 +136,7 @@ function! monster#omnifunc(findstart, base)
 	let s:result = monster#completion#complete(context)
 	if empty(s:result)
 		echom "monster.vim - empty completion"
-		return -3
+		return -2
 	endif
 	return context.start_col
 endfunction
