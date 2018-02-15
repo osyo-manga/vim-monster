@@ -11,7 +11,11 @@ function! s:then(context, channel)
 	if output == ""
 		return
 	endif
-	call monster#cache#add(a:context, monster#completion#solargraph#parse(output))
+	try
+		call monster#cache#add(a:context, monster#completion#solargraph#parse(output))
+	catch
+		return
+	endtry
 	echo "monster.vim - finish async completion"
 	if monster#context#get_current().cache_keyword !=# a:context.cache_keyword
 		return
