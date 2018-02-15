@@ -42,7 +42,7 @@ function! monster#completion#solargraph#async_solargraph_suggest#complete(contex
 
 	let tempfile = monster#make_tempfile(a:context.bufnr, "rb")
 	let command = monster#completion#solargraph#solargraph_suggest#command(a:context, tempfile)
-	let process = job_start([&shell, &shellcmdflag, command], {
+	let process = job_start(command, {
     \ 'close_cb': {ch -> [s:then(a:context, ch), delete(tempfile)]}
 	\})
 
