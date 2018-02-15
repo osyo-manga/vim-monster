@@ -52,8 +52,6 @@ function! monster#completion#solargraph#async_solargraph_suggest#complete(contex
 
 	let s:process = process
 	
-	call feedkeys("\<C-G>")
-
 	return []
 endfunction
 
