@@ -96,8 +96,8 @@ function! monster#completion#solargraph#async_solargraph_suggest#test()
 endfunction
 
 
-
 augroup monster-completion-solargraph-async_solargraph_suggest
+	autocmd!
 	autocmd InsertEnter,InsertLeave * call monster#completion#solargraph#async_solargraph_suggest#cancel()
 augroup END
 
