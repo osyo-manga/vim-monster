@@ -2,62 +2,66 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:Reunions = vital#of("monster").import("Reunions")
+
+function! s:then(context, channel)
+	let output = ""
+	while ch_status(a:channel, {"part": "out"}) == "buffered"
+		let output .= substitute(ch_read(a:channel), "\xff", "", "g")
+	endwhile
+	if output == ""
+		return
+	endif
+	try
+		call monster#cache#add(a:context, monster#completion#solargraph#parse(output))
+	catch
+		return
+	endtry
+	echo "monster.vim - finish async completion"
+	if monster#context#get_current().cache_keyword !=# a:context.cache_keyword
+		return
+	endif
+	if monster#start_complete(0, a:context) == 0
+		if &completeopt !~ '\(noinsert\|noselect\)'
+			call feedkeys("\<C-p>")
+		endif
+	endif
+endfunction
 
 
-inoremap <silent> <Plug>(monster-exit-completion-mode) <C-r><Esc><C-g><Esc>
-
-
-function! monster#completion#solargraph#solargraph_suggest#complete(context)
+function! monster#completion#solargraph#async_solargraph_suggest#complete(context)
 	call monster#completion#solargraph#async_solargraph_suggest#cancel()
 	if !executable("solargraph")
 		call monster#errmsg("No executable 'solargraph' command.")
 		call monster#errmsg("Please install 'gem install solargraph'.")
 		return []
 	endif
+	if !exists('s:job')
+		let args = ["solargraph", "server", "--port=".g:monster#completion#solargraph#http_port]
+		let s:job = job_start(args)
+		augroup MonsterSolargraph
+			au!
+			au VimLeave * call job_stop(s:job)
+		augroup END
+	endif
 
 	let tempfile = monster#make_tempfile(a:context.bufnr, "rb")
 	let command = monster#completion#solargraph#solargraph_suggest#command(a:context, tempfile)
-	let process = s:Reunions.process(command)
-	let process.tempfile = tempfile
-	let process.context = a:context
-	function! process.then(output, result)
-		call delete(self.tempfile)
-		call monster#debug_log(
-\			"[async_solargraph_suggest.vim] solargraph_suggest result : \n" . string(a:result) . "\n"
-\		)
-
-		if a:result.status != "success"
-			echo "monster.vim - failed async completion"
-			call monster#cache#add(self.context, [])
-			return
-		endif
-		call monster#cache#add(self.context, monster#completion#solargraph#parse(a:output))
-		echo "monster.vim - finish async completion"
-		if monster#context#get_current().cache_keyword !=# self.context.cache_keyword
-			return
-		endif
-		if monster#start_complete(0, self.context) == 0
-			if &completeopt !~ '\(noinsert\|noselect\)'
-				call feedkeys("\<C-p>")
-			endif
-		endif
-	endfunction
+	let process = job_start(command, {
+    \ 'close_cb': {ch -> [s:then(a:context, ch), delete(tempfile)]}
+	\})
 
 	call monster#debug_log(
 \		"[async_solargraph_suggest.vim] solargraph command : " . command . "\n"
 \	)
 
 	let s:process = process
-
-	call feedkeys("\<Plug>(monster-exit-completion-mode)")
 	
 	return []
 endfunction
 
 
 function! monster#completion#solargraph#async_solargraph_suggest#is_alive_process()
-	return !(exists("s:process") && s:process.is_exit())
+	return !(exists("s:process") && job_status(s:process, "run"))
 endfunction
 
 
@@ -66,7 +70,7 @@ function! monster#completion#solargraph#async_solargraph_suggest#cancel()
 		return
 	endif
 	echo "monster.vim - cancel async completion"
-	call s:process.kill(1)
+	call job_stop(s:process, 'kill')
 	unlet s:process
 endfunction
 
@@ -90,15 +94,7 @@ endfunction
 
 
 
-let s:count = 0
 augroup monster-completion-solargraph-async_solargraph_suggest
-	autocmd!
-" 	autocmd CursorHoldI * echo s:count | let s:count += 1
-\|	call feedkeys(mode() =~# '[iR]' ? "\<C-r>\<Esc>" : "g\<Esc>", 'n')
-
-" 	autocmd InsertCharPre * call feedkeys("\<Plug>(monster-exit-completion-mode-hoge)")
-
-	autocmd InsertCharPre,CursorHoldI * call s:Reunions.update_in_cursorhold(1)
 	autocmd InsertEnter,InsertLeave * call monster#completion#solargraph#async_solargraph_suggest#cancel()
 augroup END
 
