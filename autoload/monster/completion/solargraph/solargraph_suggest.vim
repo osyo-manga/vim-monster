@@ -26,7 +26,7 @@ function! monster#completion#solargraph#solargraph_suggest#complete(context)
 		return
 	endif
 	if !exists('s:job')
-		let args = ["solargraph.bat", "server", "--port=".g:monster#completion#solargraph#http_port]
+		let args = ["solargraph", "server", "--port=".g:monster#completion#solargraph#http_port]
 		let s:job = job_start(args)
 		augroup MonsterSolargraph
 			au!
