@@ -35,8 +35,9 @@ function! monster#completion#solargraph#async_solargraph_suggest#complete(contex
 		call monster#errmsg("Please install 'gem install solargraph'.")
 		return []
 	endif
-	if !exists('s:job')
-		let args = ["solargraph", "server", "--port=".g:monster#completion#solargraph#http_port]
+	if !exists('s:job') || job_status(s:job) != "run"
+		let command = "solargraph" . (has('win32') ? ".bat" : "")
+		let args = [command, "server", "--port=".g:monster#completion#solargraph#http_port]
 		let s:job = job_start(args)
 		augroup MonsterSolargraph
 			au!
@@ -83,7 +84,9 @@ function! monster#completion#solargraph#async_solargraph_suggest#test()
 	call monster#debug#clear_log()
 	try
 		call monster#completion#solargraph#async_solargraph_suggest#complete(context)
-		call s:process.wait()
+		while job_status(s:process) == "run"
+			sleep 100m
+		endwhile
 		let result = monster#cache#get(context)
 		return { "context" : context, "result" : result, "log" : monster#debug#log() }
 	finally
@@ -93,8 +96,8 @@ function! monster#completion#solargraph#async_solargraph_suggest#test()
 endfunction
 
 
-
 augroup monster-completion-solargraph-async_solargraph_suggest
+	autocmd!
 	autocmd InsertEnter,InsertLeave * call monster#completion#solargraph#async_solargraph_suggest#cancel()
 augroup END
 
