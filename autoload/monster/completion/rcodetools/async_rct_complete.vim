@@ -2,10 +2,30 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:Reunions = vital#of("monster").import("Reunions")
 
-
-inoremap <silent> <Plug>(monster-exit-completion-mode) <C-r><Esc><C-g><Esc>
+function! s:then(context, channel)
+	let output = ""
+	while ch_status(a:channel, {"part": "out"}) == "buffered"
+		let output .= substitute(ch_read(a:channel), "\xff", "", "g")
+	endwhile
+	if output == ""
+		return
+	endif
+	try
+		call monster#cache#add(a:context, monster#completion#rcodetools#parse(output))
+	catch
+		return
+	endtry
+	echo "monster.vim - finish async completion"
+	if monster#context#get_current().cache_keyword !=# a:context.cache_keyword
+		return
+	endif
+	if monster#start_complete(0, a:context) == 0
+		if &completeopt !~ '\(noinsert\|noselect\)'
+			call feedkeys("\<C-p>")
+		endif
+	endif
+endfunction
 
 
 function! monster#completion#rcodetools#async_rct_complete#complete(context)
@@ -18,31 +38,9 @@ function! monster#completion#rcodetools#async_rct_complete#complete(context)
 
 	let tempfile = monster#make_tempfile(a:context.bufnr, "rb")
 	let command = monster#completion#rcodetools#rct_complete#command(a:context, tempfile)
-	let process = s:Reunions.process(command)
-	let process.tempfile = tempfile
-	let process.context = a:context
-	function! process.then(output, result)
-		call delete(self.tempfile)
-		call monster#debug_log(
-\			"[async_rct_complete.vm] rct-complete result : \n" . string(a:result) . "\n"
-\		)
-
-		if a:result.status != "success"
-			echo "monster.vim - failed async completion"
-			call monster#cache#add(self.context, [])
-			return
-		endif
-		call monster#cache#add(self.context, monster#completion#rcodetools#parse(a:output))
-		echo "monster.vim - finish async completion"
-		if monster#context#get_current().cache_keyword !=# self.context.cache_keyword
-			return
-		endif
-		if monster#start_complete(0, self.context) == 0
-			if &completeopt !~ '\(noinsert\|noselect\)'
-				call feedkeys("\<C-p>")
-			endif
-		endif
-	endfunction
+	let process = job_start(command, {
+    \ 'close_cb': {ch -> [s:then(a:context, ch), delete(tempfile)]}
+	\})
 
 	call monster#debug_log(
 \		"[async_rct_complete.vm] rct-complete command : " . command . "\n"
@@ -50,8 +48,6 @@ function! monster#completion#rcodetools#async_rct_complete#complete(context)
 
 	let s:process = process
 
-	call feedkeys("\<Plug>(monster-exit-completion-mode)")
-	
 	return []
 endfunction
 
