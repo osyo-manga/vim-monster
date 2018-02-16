@@ -35,8 +35,9 @@ function! monster#completion#solargraph#async_solargraph_suggest#complete(contex
 		call monster#errmsg("Please install 'gem install solargraph'.")
 		return []
 	endif
-	if !exists('s:job')
-		let args = ["solargraph", "server", "--port=".g:monster#completion#solargraph#http_port]
+	if !exists('s:job') || job_status(s:job) != "run"
+		let command = "solargraph" . (has('win32') ? ".bat" : "")
+		let args = [command, "server", "--port=".g:monster#completion#solargraph#http_port]
 		let s:job = job_start(args)
 		augroup MonsterSolargraph
 			au!
