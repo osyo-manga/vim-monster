@@ -53,7 +53,7 @@ endfunction
 
 
 function! monster#completion#rcodetools#async_rct_complete#is_alive_process()
-	return !(exists("s:process") && s:process.is_exit())
+	return !(exists("s:process") && job_status(s:process) == "run")
 endfunction
 
 
@@ -62,7 +62,7 @@ function! monster#completion#rcodetools#async_rct_complete#cancel()
 		return
 	endif
 	echo "monster.vim - cancel async completion"
-	call s:process.kill(1)
+	call job_stop(s:process, 'kill')
 	unlet s:process
 endfunction
 
@@ -75,7 +75,9 @@ function! monster#completion#rcodetools#async_rct_complete#test()
 	call monster#debug#clear_log()
 	try
 		call monster#completion#rcodetools#async_rct_complete#complete(context)
-		call s:process.wait()
+		while job_status(s:process) == "run"
+			sleep 100m
+		endwhile
 		let result = monster#cache#get(context)
 		return { "context" : context, "result" : result, "log" : monster#debug#log() }
 	finally

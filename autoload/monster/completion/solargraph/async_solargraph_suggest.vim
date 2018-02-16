@@ -83,7 +83,9 @@ function! monster#completion#solargraph#async_solargraph_suggest#test()
 	call monster#debug#clear_log()
 	try
 		call monster#completion#solargraph#async_solargraph_suggest#complete(context)
-		call s:process.wait()
+		while job_status(s:process) == "run"
+			sleep 100m
+		endwhile
 		let result = monster#cache#get(context)
 		return { "context" : context, "result" : result, "log" : monster#debug#log() }
 	finally
