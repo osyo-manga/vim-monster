@@ -6,7 +6,7 @@ let g:monster#completion#solargraph#http_port = get(g:, "monster#completion#sola
 
 let g:monster#completion#solargraph#backend = get(g:, "monster#completion#solargraph#backend", "solargraph_suggest")
 
-let g:monster#completion#solargraph#complete_command = get(g:, "monster#completion#solargraph#complete_command", "solargraph")
+let g:monster#completion#solargraph#complete_command = get(g:, "monster#completion#solargraph#complete_command", "solargraph" . (has('win32') ? ".bat" : ""))
 
 function! s:item(value)
 	return {

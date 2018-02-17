@@ -15,7 +15,7 @@ endfunction
 
 
 function! monster#completion#solargraph#solargraph_suggest#check()
-	return executable("solargraph") && executable("curl")
+	return executable(g:monster#completion#solargraph#complete_command) && executable("curl")
 endfunction
 
 
@@ -26,7 +26,7 @@ function! monster#completion#solargraph#solargraph_suggest#complete(context)
 		return
 	endif
 	if !exists('s:job') || job_status(s:job) != "run"
-		let command = "solargraph" . (has('win32') ? ".bat" : "")
+		let command = g:monster#completion#solargraph#complete_command
 		let args = [command, "server", "--port=".g:monster#completion#solargraph#http_port]
 		let s:job = job_start(args)
 		augroup MonsterSolargraph
