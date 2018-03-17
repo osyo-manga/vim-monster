@@ -30,13 +30,13 @@ endfunction
 
 function! monster#completion#solargraph#async_solargraph_suggest#complete(context)
 	call monster#completion#solargraph#async_solargraph_suggest#cancel()
-	if !executable("solargraph")
+	if !executable(g:monster#completion#solargraph#complete_command)
 		call monster#errmsg("No executable 'solargraph' command.")
 		call monster#errmsg("Please install 'gem install solargraph'.")
 		return []
 	endif
 	if !exists('s:job') || job_status(s:job) != "run"
-		let command = "solargraph" . (has('win32') ? ".bat" : "")
+		let command = g:monster#completion#solargraph#complete_command
 		let args = [command, "server", "--port=".g:monster#completion#solargraph#http_port]
 		let s:job = job_start(args)
 		augroup MonsterSolargraph
